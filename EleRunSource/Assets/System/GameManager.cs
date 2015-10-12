@@ -5,6 +5,10 @@ public class GameManager : MonoBehaviour
 {
 	public static GameManager	instance_ = null;
 
+	#region References
+	public Player player;
+	#endregion
+
 	bool isGameActive = false;
 
 	const float	minSpeed	= 0.1f,
@@ -35,9 +39,12 @@ public class GameManager : MonoBehaviour
 	}
 	#endregion
 
-	#region MonoBehavior Functions
 	void Awake()
 	{
+		#region References
+		player = GameObject.FindObjectOfType<Player>().GetComponent<Player>();
+		#endregion
+
 		if (instance_)
 		{
 			Destroy (gameObject);
@@ -61,17 +68,8 @@ public class GameManager : MonoBehaviour
 		if ( score > highScore )
 			highScore = score;
 	}
-	#endregion
 
-	
-	public void BeginGame()
-	{
-		isGameActive = true;
-		score = 0;
-		elapsedTime = 0.0f;
-		speedScale = 2.0f;
-		StartCoroutine( IncrementScorePerSecond() );
-	}
+	void AddScore( int amount ) { score += amount; }
 
 	IEnumerator IncrementScorePerSecond()
 	{
@@ -82,8 +80,28 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
+	public void BeginGame()
+	{
+		Application.LoadLevel( "Main" );
+
+		isGameActive = true;
+		score = 0;
+		elapsedTime = 0.0f;
+		speedScale = 2.0f;
+		StartCoroutine( IncrementScorePerSecond() );
+
+		// subscribe events
+		player.onPlayerDeath += this.EndGame;
+		player.onSwapAttunement += this.AddScore(5);
+	}
+
 	public void EndGame()
 	{
+		// unsubscribe events
+		player.onPlayerDeath -= this.EndGame;
+		player.onSwapAttunement -= this.AddScore(5);
+
+		// move on
 		isGameActive = false;
 		Application.LoadLevel( "GameOver" );
 	}

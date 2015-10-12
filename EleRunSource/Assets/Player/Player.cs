@@ -5,8 +5,17 @@ using System.Collections;
 [ RequireComponent( typeof( BoxCollider2D ) ) ]
 public class Player : MonoBehaviour
 {
+	#region References
 	private	Rigidbody2D	rb = null;
 	private SpriteRenderer render = null;
+	#endregion
+
+	#region Events
+	public delegate void E_OnPlayerDeath();
+	public E_OnPlayerDeath onPlayerDeath;
+	public delegate void E_OnSwapAttunement();
+	public E_OnSwapAttunement onSwapAttunement;
+	#endregion
 
 	#region Element and attuning
 	public Attunement[] attunements = new Attunement[4];	// could use list, but for this case
@@ -40,9 +49,10 @@ public class Player : MonoBehaviour
 
 	void Awake()
 	{
-		// references
+		#region References
 		rb = GetComponent<Rigidbody2D>();
 		render = GetComponent<SpriteRenderer>();
+		#endregion
 
 		// assign attunements to an element
 		attunements[0].Init( Element.FIRE, Color.red );
@@ -108,7 +118,8 @@ public class Player : MonoBehaviour
 		print ( "Swap to " + newElement );
 		if ( GetAttunementFromElement( newElement ).IsAvailable )
 		{
-			GameManager.score += 5;
+			if ( onSwapAttunement != null )
+				onSwapAttunement();
 
 			if ( currentAttunement != null )			// check if currentAttunement was assigned before
 				currentAttunement.OnSwapOut();	// trying to call its OnSwapOut()
@@ -142,6 +153,8 @@ public class Player : MonoBehaviour
 	void Kill()
 	{
 		// TODO decent feedback that you died, before game over
-		GameManager.instance_.EndGame();
+		if ( onPlayerDeath != null )
+			onPlayerDeath();
+		//GameManager.instance_.EndGame ();
 	}
 }

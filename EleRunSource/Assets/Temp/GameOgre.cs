@@ -7,6 +7,6 @@ public class GameOgre : MonoBehaviour
 	void Update ()
 	{
 		if (Input.GetKeyDown (KeyCode.Space))
-			Application.LoadLevel ("Main");
+			GameManager.instance_.BeginGame ();
 	}
 }

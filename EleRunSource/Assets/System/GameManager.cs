@@ -3,48 +3,40 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
-	public static GameManager	instance_ = null;
+	public static GameManager instance_ = null;
 
 	#region References
-	public Player player;
+	public Player player = null;
 	#endregion
 
 	bool isGameActive = false;
 
-	const float	minSpeed	= 0.1f,
-				maxSpeed	= 7.5f;
+	const float	MIN_SPEED	= 0.1f,
+				MAX_SPEED	= 7.5f;
 
 	private	float speedScale	= 2.0f;
-
-	public static int score = 0;
-	public static int highScore = 0;
-	private float elapsedTime = 0.0f;
-	// TODO store time for the game with the high score
 
 	#region Accessors
 	public float SpeedScale
 	{
 		get
 		{
-			float speed = speedScale + (elapsedTime / 2);
-			return Mathf.Clamp( speed,minSpeed,maxSpeed );
+			float speed = speedScale + (GameData.elapsedTime / 2);
+			return Mathf.Clamp( speed,MIN_SPEED,MAX_SPEED );
 		}
 		private set {}
 	}
 
 	public int GetTime
 	{
-		get{ return Mathf.FloorToInt(elapsedTime); }
+		get{ return Mathf.FloorToInt(GameData.elapsedTime); }
 		private set{}
 	}
 	#endregion
 
 	void Awake()
 	{
-		#region References
-		player = GameObject.FindObjectOfType<Player>().GetComponent<Player>();
-		#endregion
-
+		// singleton stuff
 		if (instance_)
 		{
 			Destroy (gameObject);
@@ -58,51 +50,62 @@ public class GameManager : MonoBehaviour
 
 	void Start()
 	{
+
 		BeginGame();
 	}
 
 	void Update()
 	{
-		elapsedTime += Time.deltaTime;
-
-		if ( score > highScore )
-			highScore = score;
+		GameData.Update();
 	}
 
-	void AddScore( int amount ) { score += amount; }
+	void AddScore( int amount ) { GameData.AddScore (amount); }
 
 	IEnumerator IncrementScorePerSecond()
 	{
 		while ( isGameActive )
 		{
 			yield return new WaitForSeconds( 1.0f );
-			score++;
+			GameData.score++;
 		}
 	}
 
 	public void BeginGame()
 	{
-		Application.LoadLevel( "Main" );
-
+		RefreshReferences();
 		isGameActive = true;
-		score = 0;
-		elapsedTime = 0.0f;
+		GameData.Reset();
 		speedScale = 2.0f;
 		StartCoroutine( IncrementScorePerSecond() );
 
 		// subscribe events
-		player.onPlayerDeath += this.EndGame;
-		player.onSwapAttunement += this.AddScore(5);
+		player.onPlayerDeath += EndGame;
 	}
 
 	public void EndGame()
 	{
 		// unsubscribe events
-		player.onPlayerDeath -= this.EndGame;
-		player.onSwapAttunement -= this.AddScore(5);
+		player.onPlayerDeath -= EndGame;
+
+
+		player = null;
+		//
 
 		// move on
 		isGameActive = false;
 		Application.LoadLevel( "GameOver" );
+	}
+
+	void RefreshReferences()
+	{
+		#region player
+		if ( !GameObject.FindObjectOfType<Player>().GetComponent<Player>() )
+		{
+			Debug.LogError (name + ": Player not found you dolt!");
+			Debug.Break ();
+		}
+		else
+			player = GameObject.FindObjectOfType<Player>().GetComponent<Player>();
+		#endregion
 	}
 }

@@ -13,20 +13,16 @@ public class Player : MonoBehaviour
 	#region Events
 	public delegate void E_OnPlayerDeath();
 	public E_OnPlayerDeath onPlayerDeath;
-	public delegate void E_OnSwapAttunement();
-	public E_OnSwapAttunement onSwapAttunement;
+	//public delegate void E_OnSwapAttunement();
+	//public E_OnSwapAttunement onSwapAttunement;
 	#endregion
-
-	#region Element and attuning
-	public Attunement[] attunements = new Attunement[4];	// could use list, but for this case
-															// actually want a fixed size
+	
+	public Attunement[] attunements = new Attunement[4];	// could use list, but for this case, actually want a fixed size
 	private Attunement currentAttunement = null;
-	#endregion
 
-	#region Jumpstuff
+	// Jump stuff
 	private float jumpForce = 10.0f;
 	private float jumpTime = 0.5f;
-	#endregion
 
 	#region Accessors
 	public Element GetElement
@@ -99,7 +95,7 @@ public class Player : MonoBehaviour
 		}
 	}
 
-	public void AttemptDamage( Hazard source )
+	public void RecieveDamage( Hazard source )
 	{
 		if ( source.element != GetElement )
 			Kill();
@@ -118,11 +114,8 @@ public class Player : MonoBehaviour
 		print ( "Swap to " + newElement );
 		if ( GetAttunementFromElement( newElement ).IsAvailable )
 		{
-			if ( onSwapAttunement != null )
-				onSwapAttunement();
-
-			if ( currentAttunement != null )			// check if currentAttunement was assigned before
-				currentAttunement.OnSwapOut();	// trying to call its OnSwapOut()
+			if ( currentAttunement != null )		// check if currentAttunement was assigned before
+				currentAttunement.OnSwapOut();		// trying to call its OnSwapOut()
 
 			currentAttunement = GetAttunementFromElement( newElement );
 			render.color = currentAttunement.color;
@@ -143,7 +136,7 @@ public class Player : MonoBehaviour
 			if ( a.element == target )
 				return a;
 		}
-		// if no attunement had a matching element, something's really wrong
+		// if no attunement had a matching element, something's probably misconfigured
 		Debug.LogError( name + ": GetAttunementFromElement() failed! What the hell did you do?" );
 		Debug.Break();
 		return null;
@@ -152,6 +145,7 @@ public class Player : MonoBehaviour
 
 	void Kill()
 	{
+		print( onPlayerDeath );
 		// TODO decent feedback that you died, before game over
 		if ( onPlayerDeath != null )
 			onPlayerDeath();

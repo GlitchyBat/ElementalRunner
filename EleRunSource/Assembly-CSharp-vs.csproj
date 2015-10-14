@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Element.cs" />
+     <Compile Include="Assets\GameData.cs" />
      <Compile Include="Assets\HUD\HudElementCooldown.cs" />
      <Compile Include="Assets\Hazards\Hazard.cs" />
      <Compile Include="Assets\Hazards\Obstacles\Obstacle.cs" />

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 [ RequireComponent( typeof( BoxCollider2D ) ) ]
@@ -22,19 +22,19 @@ public abstract class Hazard : MonoBehaviour
 	{
 		if ( other.GetComponent<Player>() )
 		{
-			other.GetComponent<Player>().AttemptDamage( this );
+			other.GetComponent<Player>().RecieveDamage( this );
 		}
 	}
 
 	#region Score
 	public void AddToScore()
 	{
-		GameManager.score += pointValue;
+		GameData.AddScore( pointValue );
 	}
 
 	public void AddToScore( int value )
 	{
-		GameManager.score += value;
+		GameData.AddScore (value);
 	}
 	#endregion
 }

@@ -2,44 +2,27 @@
 using System.Collections;
 using System.Collections.Generic;
 
-// HACK this whole thing is one
 public class LevelGenerator : MonoBehaviour
 {
-	// level cells not implimented yet
-	//public List<LevelCell> cells = new List<LevelCell>();
+	private Vector2 cellSpawnPoint = new Vector2( 14.0f, 3.6f );
 
-	#region temporary - for bare bones level generator
-	public List<Transform> spawnPoints = new List<Transform>();
-	public List<Hazard> hazards = new List<Hazard>();
-	#endregion
+	List<LevelCell> allCells = new List<LevelCell>();
+	List<LevelCell> possibleCells = new List<LevelCell>();
+
+	int difficultyScale = 4;
 
 	public float spawnRateInSeconds = 1.5f;
 	bool isSpawnActive = false;
 
 	void Awake()
 	{
-		#region safety with lists
-		// remove null entries in hazards
-		foreach ( Hazard h in hazards )
-		{
-			if ( !h )
-				hazards.Remove( h );
-		}
+		allCells = LoadAllLevelCells();
 
-		// if no hazards
-		if ( hazards.Count == 0 )
+		if ( allCells.Count == 0 )
 		{
-			Debug.LogError( name + ": No hazards are in list! Screeeeach!" );
+			Debug.LogError( name + ": No cells found in " + allCells );
 			Debug.Break();
 		}
-
-		// if no positions
-		if ( spawnPoints.Count == 0 )
-		{
-			Debug.LogError( name + ": No spawn points to use! Screeeeach!" );
-			Debug.Break();
-		}
-		#endregion
 	}
 
 	void Start()
@@ -48,37 +31,57 @@ public class LevelGenerator : MonoBehaviour
 		StartCoroutine( PulseGenerate() );
 	}
 
+	#region LevelCell list management
+	List<LevelCell> LoadAllLevelCells( )
+	{
+		List<LevelCell> lcl = new List<LevelCell>();
+		lcl.AddRange( Resources.LoadAll<LevelCell>("LevelCells/") );
+
+		// uses 'for' due to 'foreach' enumerators breaking from modifying the list in real time
+		// checks each loaded cell to make sure nothing's just garbage or otherwise
+		// not meant to be used
+		for (int i = 0; i < lcl.Count; i++)
+		{
+			LevelCell lc = lcl [i];
+			if (!lc.IsUsable)
+				lcl.Remove (lc);
+		}
+
+		return lcl;
+	}
+
+	void ReassignPossibleCells( int difficultyValue ) 
+	{
+		possibleCells.Clear();
+		foreach ( LevelCell cell in allCells )
+		{
+			if ( cell.difficultyValue <= difficultyValue )
+				possibleCells.Add( cell );
+		}
+	}
+	#endregion
+
+	#region Generation
 	IEnumerator PulseGenerate()
 	{
+		ReassignPossibleCells( difficultyScale );
 		while ( isSpawnActive )
 		{
-			Spawn();
+			Spawn( difficultyScale );
 			yield return new WaitForSeconds( spawnRateInSeconds );
 		}
 	}
 
-	void Spawn()
+	LevelCell SelectCell( int difficultyValue )
 	{
-		// temp- used for tracking unattunable block spawns so you never have a wall of three unblockables
-		bool unattunableSpawned = false;
-
-		foreach ( Transform p in spawnPoints )
-		{
-			// throwaway code just used to get unblockables fairly working - only spawn 1 unattunable per line
-			if ( !unattunableSpawned )
-			{
-				Hazard h = (Hazard)Instantiate(
-					hazards[Random.Range( 0,hazards.Count )],
-					p.position, Quaternion.identity );
-				if ( h.element == Element.UNINITIALIZED )
-					unattunableSpawned = true;
-			}
-			else
-			{
-				Instantiate(
-					hazards[Random.Range( 0,hazards.Count-1 )], // assumes 0-3 are element blocks and 4 is no element
-					p.position, Quaternion.identity );
-			}
-		}
+		LevelCell selected = possibleCells[ Random.Range( 0, possibleCells.Count ) ];
+		return selected;
 	}
+
+	void Spawn( int difficultyValue )
+	{
+		LevelCell selectedCell = SelectCell( difficultyValue );
+		Instantiate( selectedCell, cellSpawnPoint,Quaternion.identity );
+	}
+	#endregion
 }

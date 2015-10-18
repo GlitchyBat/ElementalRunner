@@ -4,7 +4,7 @@ using System.Collections;
 [System.Serializable]
 public class Attunement
 {
-	const float baseCooldown = 1.0f;
+	const float BASE_COOLDOWN = 1.0f;
 	private float cooldownTimer = 0.0f;
 	bool isAttuned = false;
 
@@ -30,25 +30,12 @@ public class Attunement
 	public float GetCooldown() { return cooldownTimer; }
 	#endregion
 
-	public void Init( Element element, Color color )
+	public Attunement Init( Element element, Color color )
 	{
 		this.element = element;
 		this.color = color;
+		return this;
 	}
-
-	#region Called on player swapping attunements
-	public void OnSwapIn()
-	{
-		cooldownTimer = baseCooldown;
-		isAttuned = true;
-	}
-
-	public void OnSwapOut()
-	{
-		cooldownTimer = baseCooldown;
-		isAttuned = false;
-	}
-	#endregion
 
 	// called by player in Update when not the current attunement
 	public void UpdateCooldown()
@@ -60,4 +47,18 @@ public class Attunement
 				cooldownTimer -= Time.deltaTime;
 		}
 	}
+
+	#region Called on player swapping attunements
+	public void OnSwapIn()
+	{
+		cooldownTimer = BASE_COOLDOWN;
+		isAttuned = true;
+	}
+
+	public void OnSwapOut()
+	{
+		cooldownTimer = BASE_COOLDOWN;
+		isAttuned = false;
+	}
+	#endregion
 }

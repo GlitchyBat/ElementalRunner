@@ -5,6 +5,8 @@ using UnityEngine.UI;
 public class DisplayGameInfo : MonoBehaviour
 {
 	Text text = null;
+
+	GameManager gameManager = null;
 	Player player = null;
 
 	void Awake()
@@ -14,6 +16,7 @@ public class DisplayGameInfo : MonoBehaviour
 
 	void Start()
 	{
+		gameManager = GameObject.FindObjectOfType<GameManager>();
 		player = GameObject.FindObjectOfType<Player>();
 	}
 
@@ -22,7 +25,7 @@ public class DisplayGameInfo : MonoBehaviour
 		// temp writing
 		text.text =
 			"[Current Element] " + player.GetElement + "\n" +
-			"[Elapsed Time] " + GameManager.instance_.GetTime + "\n" +
+			"[Elapsed Time] " + gameManager.GetTime + "\n" +
 			"[Score] " + GameData.score + "[Hi] " + GameData.highScore + "\n" +
 			"Cooldowns:\n" +
 			"[Fire]" + player.GetAttunementFromElement( Element.FIRE ).GetCooldown() + "\n" +

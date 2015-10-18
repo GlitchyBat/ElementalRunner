@@ -3,7 +3,7 @@ using System.Collections;
 
 public class HudElementCooldown : MonoBehaviour 
 {
-	Transform _transform = null;
+	//Transform _transform = null;
 	Renderer _renderer = null;
 
 	Player player = null;
@@ -12,7 +12,7 @@ public class HudElementCooldown : MonoBehaviour
 
 	void Awake()
 	{
-		_transform = GetComponent<Transform>();
+		//_transform = GetComponent<Transform>();
 		_renderer = GetComponent<Renderer>();
 	}
 

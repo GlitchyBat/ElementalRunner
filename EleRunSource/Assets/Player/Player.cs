@@ -50,37 +50,39 @@ public class Player : MonoBehaviour
 		render = GetComponent<SpriteRenderer>();
 		#endregion
 
+		#region Properly set up attunements
 		// assign attunements to an element
 		attunements[0].Init( Element.FIRE, Color.red );
 		attunements[1].Init( Element.WATER, Color.blue );
 		attunements[2].Init( Element.WIND, Color.gray );
 		attunements[3].Init( Element.EARTH, Color.yellow );
-
-		SwapToElement( Element.FIRE ); // Fire for initial element
+		currentAttunement = SwapToElement( Element.FIRE ); // Fire for initial element
+		#endregion
 	}
 
 	void Update()
 	{
 		// Update attunement cooldowns
-		foreach ( Attunement a in attunements )
-			a.UpdateCooldown();
+		for (int i = 0; i < attunements.Length; i++)
+		{
+			Attunement a = attunements[i];
+			a.UpdateCooldown ();
+		}
 
 		#region Player input
 		if ( Input.GetKeyDown(KeyCode.Space) && !IsAirborn)
 			StartCoroutine( Jump() );
 
 		if ( Input.GetKeyDown( KeyCode.A ) )
-			SwapToElement(Element.FIRE);
+			currentAttunement = SwapToElement(Element.FIRE);
 		if ( Input.GetKeyDown( KeyCode.S ) )
-			SwapToElement(Element.WATER);
+			currentAttunement = SwapToElement(Element.WATER);
 		if ( Input.GetKeyDown( KeyCode.D ) )
-			SwapToElement(Element.WIND);
+			currentAttunement = SwapToElement(Element.WIND);
 		if ( Input.GetKeyDown( KeyCode.F ) )
-			SwapToElement(Element.EARTH);
+			currentAttunement = SwapToElement(Element.EARTH);
 		#endregion
 	}
-
-
 
 	IEnumerator Jump()
 	{
@@ -90,7 +92,7 @@ public class Player : MonoBehaviour
 			if ( Input.GetKey(KeyCode.Space) )
 				rb.velocity = Vector2.up * jumpForce;
 			else
-				StopCoroutine( Jump () );
+				StopCoroutine( Jump() );
 			yield return null;
 		}
 	}
@@ -109,7 +111,7 @@ public class Player : MonoBehaviour
 	}
 
 	#region Element functions
-	void SwapToElement( Element newElement )
+	Attunement SwapToElement( Element newElement )
 	{
 		print ( "Swap to " + newElement );
 		if ( GetAttunementFromElement( newElement ).IsAvailable )
@@ -117,14 +119,15 @@ public class Player : MonoBehaviour
 			if ( currentAttunement != null )		// check if currentAttunement was assigned before
 				currentAttunement.OnSwapOut();		// trying to call its OnSwapOut()
 
-			currentAttunement = GetAttunementFromElement( newElement );
-			render.color = currentAttunement.color;
-
-			currentAttunement.OnSwapIn();
+			Attunement a = GetAttunementFromElement( newElement );
+			render.color = a.color;
+			a.OnSwapIn();
+			return a;
 		}
 		else 
 		{
 			print (newElement + " not charged" );
+			return currentAttunement;
 		}
 	}
 
@@ -145,7 +148,6 @@ public class Player : MonoBehaviour
 
 	void Kill()
 	{
-		print( onPlayerDeath );
 		// TODO decent feedback that you died, before game over
 		if ( onPlayerDeath != null )
 			onPlayerDeath();
